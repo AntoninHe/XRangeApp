@@ -1,12 +1,12 @@
 ########################################################
 # Makefile by NetBlocks.eu
-# XRange LoRa Module (sx1272): 
+# XRange LoRa Module (sx1272):
 # www.netblocks.eu/xrange-sx1272-lora-datasheet/
 ########################################################
 # Path to gcc
 GCC_PATH = /usr/bin/
 # Path to st-flash tool
-FLASH_PATH = /usr/bin/st-flash
+FLASH_PATH =/usr/local/bin/st-flash
 
 ########################################################
 # target
@@ -100,7 +100,7 @@ C_SOURCES = \
   ../../../../src/apps/LoRaMac/classA/XRange/main.c
 ASM_SOURCES = \
   ../../../../src/boards/XRange/cmsis/arm-gcc/startup_stm32l151xc.s
-  
+
 
 #######################################
 # binaries
@@ -113,7 +113,7 @@ AR = $(PREFIX)ar
 SZ = $(PREFIX)size
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
- 
+
 #########################################################
 # CFLAGS
 #########################################################
@@ -146,13 +146,13 @@ CFLAGS += -MD -MP -MF .dep/$(@F).d
 LDSCRIPT = "../../../../src/boards/XRange/cmsis/arm-gcc/STM32L151CC_FLASH.ld"
 # libraries
 LIBS = -lc -lm -lnosys
-LIBS += 
+LIBS +=
 LIBDIR =
 CC_VER := $(shell $(CC) -dumpversion)
 ifeq "$(CC_VER)" "4.8.2"
-	LDSPECS = -specs=nosys.specs 
+	LDSPECS = -specs=nosys.specs
 else
-	LDSPECS = -specs=nano.specs -specs=nosys.specs 
+	LDSPECS = -specs=nano.specs -specs=nosys.specs
 endif
 LDFLAGS = -mthumb -mcpu=cortex-m3 $(LDSPECS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections,--no-wchar-size-warning
 
@@ -169,7 +169,7 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	@echo "C. Compiling $@..."
 	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
@@ -185,21 +185,21 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	@echo "H. Linking $@..."
 	@$(HEX) $< $@
-	
+
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	@echo "B. Building $@..."
-	@$(BIN) $< $@	
+	@$(BIN) $< $@
 	@echo "Used gcc: "$(CC_VER)
-	
+
 $(BUILD_DIR):
-	mkdir -p $@		
+	mkdir -p $@
 
 #########################################################
 # clean up
 #########################################################
 clean:
 	-rm -fR .dep $(BUILD_DIR)
-  
+
 #########################################################
 # Code::Blocks commands:
 #########################################################

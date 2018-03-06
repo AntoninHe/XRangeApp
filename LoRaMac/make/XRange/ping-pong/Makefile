@@ -6,7 +6,7 @@
 # Path to gcc
 GCC_PATH = /usr/bin/
 # Path to st-flash tool
-FLASH_PATH = /usr/bin/st-flash
+FLASH_PATH = /usr/local/bin/st-flash
 
 ########################################################
 # target
@@ -97,7 +97,7 @@ C_SOURCES = \
   ../../../src/system/crypto/cmac.c \
   ../../../src/boards/XRange/cmsis/system_stm32l1xx.c \
   ../../../src/boards/mcu/stm32/utilities.c \
-  ../../../src/apps/ping-pong/XRange/main.c
+  ../../../src/apps/ping-pong/Xrange/main.c
 ASM_SOURCES = \
   ../../../src/boards/XRange/cmsis/arm-gcc/startup_stm32l151xc.s
   
