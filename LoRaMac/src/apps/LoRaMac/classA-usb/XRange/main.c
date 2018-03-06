@@ -24,7 +24,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "utils.h"
 #include "cli.h"
 #include "eeprom_conf.h"
-#include "uart-usb-board.h"
+//#include "uart-usb-board.h"
 
 /*!
  * Defines the application data transmission duty cycle. 5s, value in [ms].
