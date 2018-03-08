@@ -28,7 +28,7 @@ Maintainer: Miguel Luis and Gregory Cristian
     #error "Please define a frequency band in the compiler options."
 #endif
 
-#define TX_OUTPUT_POWER                             0        // dBm
+#define TX_OUTPUT_POWER                             5        // dBm
 
 #if defined( USE_MODEM_LORA )
 

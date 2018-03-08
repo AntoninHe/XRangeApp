@@ -21,6 +21,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 #include "LoRaMac.h"
 #include "Commissioning.h"
+#include "utils.h"
 
 /*!
  * Defines the application data transmission duty cycle. 5s, value in [ms].
@@ -204,60 +205,22 @@ static void PrepareTxFrame( uint8_t port )
     {
     case 2:
         {
-#if defined( USE_BAND_868 )
-            uint16_t pressure = 0;
-            int16_t altitudeBar = 0;
-            int16_t temperature = 0;
-            int32_t latitude=0, longitude = 0;
-            int16_t altitudeGps = 0xFFFF;
-            uint8_t batteryLevel = 0;
-
-            pressure = ( uint16_t )0;             // in hPa / 10
-            temperature = ( int16_t )0;       // in °C * 100
-            altitudeBar = ( int16_t )0;           // in m * 10
-            batteryLevel = 0;                             // 1 (very low) to 254 (fully charged)
-            altitudeGps = 0;                           // in m
-
-            AppData[0] = AppLedStateOn;
-            AppData[1] = ( pressure >> 8 ) & 0xFF;
-            AppData[2] = pressure & 0xFF;
-            AppData[3] = ( temperature >> 8 ) & 0xFF;
-            AppData[4] = temperature & 0xFF;
-            AppData[5] = ( altitudeBar >> 8 ) & 0xFF;
-            AppData[6] = altitudeBar & 0xFF;
-            AppData[7] = batteryLevel;
-            AppData[8] = ( latitude >> 16 ) & 0xFF;
-            AppData[9] = ( latitude >> 8 ) & 0xFF;
-            AppData[10] = latitude & 0xFF;
-            AppData[11] = ( longitude >> 16 ) & 0xFF;
-            AppData[12] = ( longitude >> 8 ) & 0xFF;
-            AppData[13] = longitude & 0xFF;
-            AppData[14] = ( altitudeGps >> 8 ) & 0xFF;
-            AppData[15] = altitudeGps & 0xFF;
-#elif defined( USE_BAND_915 ) || defined( USE_BAND_915_HYBRID )
-            int16_t temperature = 0;
-            int32_t latitude, longitude = 0;
-            uint16_t altitudeGps = 0xFFFF;
-            uint8_t batteryLevel = 0;
-
-            temperature = ( int16_t )( MPL3115ReadTemperature( ) * 100 );       // in °C * 100
-
-            batteryLevel = BoardGetBatteryLevel( );                             // 1 (very low) to 254 (fully charged)
-            GpsGetLatestGpsPositionBinary( &latitude, &longitude );
-            altitudeGps = GpsGetLatestGpsAltitude( );                           // in m
-
-            AppData[0] = AppLedStateOn;
-            AppData[1] = temperature;                                           // Signed degrees celsius in half degree units. So,  +/-63 C
-            AppData[2] = batteryLevel;                                          // Per LoRaWAN spec; 0=Charging; 1...254 = level, 255 = N/A
-            AppData[3] = ( latitude >> 16 ) & 0xFF;
-            AppData[4] = ( latitude >> 8 ) & 0xFF;
-            AppData[5] = latitude & 0xFF;
-            AppData[6] = ( longitude >> 16 ) & 0xFF;
-            AppData[7] = ( longitude >> 8 ) & 0xFF;
-            AppData[8] = longitude & 0xFF;
-            AppData[9] = ( altitudeGps >> 8 ) & 0xFF;
-            AppData[10] = altitudeGps & 0xFF;
-#endif
+            AppData[0] = 0;
+            AppData[1] = 1;
+            AppData[2] = 2;
+            AppData[3] = 3;
+            AppData[4] = 4;
+            AppData[5] = 5;
+            AppData[6] = 6;
+            AppData[7] = 7;
+            AppData[8] = 8;
+            AppData[9] = 9;
+            AppData[10] = 10;
+            AppData[11] = 11;
+            AppData[12] = 12;
+            AppData[13] = 13;
+            AppData[14] = 14;
+            AppData[15] = 15;
         }
         break;
     case 224:

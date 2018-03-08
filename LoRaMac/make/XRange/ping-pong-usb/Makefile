@@ -112,8 +112,8 @@ C_SOURCES = \
 	$(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 	$(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 	$(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-	$(APP_DIR)/ping-pong-usb/Xrange/utils.c \
-	$(APP_DIR)/ping-pong-usb/Xrange/main.c
+	$(APP_DIR)/ping-pong-usb/XRange/utils.c \
+	$(APP_DIR)/ping-pong-usb/XRange/main.c
 ASM_SOURCES = \
 	$(BOARD_DIR)/XRange/cmsis/arm-gcc/startup_stm32l151xc.s
 

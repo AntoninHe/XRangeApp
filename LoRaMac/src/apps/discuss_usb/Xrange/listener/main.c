@@ -214,6 +214,7 @@ printf("Start Listner\n\r");
             break;
         case RX_TIMEOUT:
         case RX_ERROR:
+		printf("RX_ERROR \n");
 		Radio.Rx( RX_TIMEOUT_VALUE );
 		State = LOWPOWER;
             break;

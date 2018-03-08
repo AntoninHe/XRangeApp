@@ -679,24 +679,6 @@ int main( void )
     MibRequestConfirm_t mibReq;
 
     BoardInitMcu( );
-
-//	 uint8_t testDataToSend[20] ;
-//	 uint8_t ch;
-	while(1){
-    HAL_Delay(1000);
-		printf("test\n\r");
-  //  CDC_Transmit_FS(testDataToSend, 3);
-//	UartUsbPutChar(&UartUsb,'a');
-	//UartUsbPutBuffer(&UartUsb,testDataToSend,3);
-		//UartUsbPutChar(&UartUsb,'A');
-	//	UartMcuPutChar(&UartUsb,'A');
-//		if(UartUsbGetChar(&UartUsb,&ch)==0)
-//		{
-//				testDataToSend[0] = ch;
-//		}
-	}
-
-
     BoardInitPeriph( );
 
     DeviceState = DEVICE_STATE_INIT;
