@@ -183,8 +183,13 @@ int main( void )
     #error "Please define a frequency band in the compiler options."
 #endif
 
-printf("Start Listner\n\r");															
-    Radio.Rx( RX_TIMEOUT_VALUE );
+	Radio.Rx( RX_TIMEOUT_VALUE );
+
+    while( 1 )
+{
+	DelayMs( 500 );
+	printf("Start Listner\n\r");															
+}
 
     while( 1 )
     {
@@ -214,7 +219,6 @@ printf("Start Listner\n\r");
             break;
         case RX_TIMEOUT:
         case RX_ERROR:
-		printf("RX_ERROR \n");
 		Radio.Rx( RX_TIMEOUT_VALUE );
 		State = LOWPOWER;
             break;

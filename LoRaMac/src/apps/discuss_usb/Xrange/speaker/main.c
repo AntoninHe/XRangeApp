@@ -183,9 +183,10 @@ int main( void )
     #error "Please define a frequency band in the compiler options."
 #endif
 
-printf("Start Speaker\n\r");															
     Radio.Rx( RX_TIMEOUT_VALUE );
 
+DelayMs( 500 );
+printf("Start Speaker\n\r");															
 	State = RX;
     while( 1 )
     {
@@ -206,7 +207,7 @@ printf("Start Speaker\n\r");
                         {
                             Buffer[i] = i - 5;
                         }
-                        DelayMs( 1000 );
+                        DelayMs( 500 );
 			printf("Sent Smile...\n\r");
                         Radio.Send( Buffer, BufferSize );
 		}
