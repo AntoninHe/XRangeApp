@@ -23,7 +23,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 #if defined( USE_BAND_868 )
 
-#define RF_FREQUENCY                                868000000 // Hz
+#define RF_FREQUENCY                                867100000 // Hz
 
 #elif defined( USE_BAND_915 )
 
@@ -184,12 +184,10 @@ int main( void )
 #endif
 
 	Radio.Rx( RX_TIMEOUT_VALUE );
+	//Radio.Rx( 0 );//continuous
 
-    while( 1 )
-{
 	DelayMs( 500 );
 	printf("Start Listner\n\r");															
-}
 
     while( 1 )
     {
@@ -205,13 +203,14 @@ int main( void )
 			printf("Received Ping...\n\r");
 		                        DelayMs( 1 );
 		  }
+		  else
+		  {
+				printf("buffSize<=0");
+		  }
             State = LOWPOWER;
             Radio.Rx( RX_TIMEOUT_VALUE );
             break;
         case TX:
-            // Indicates on a LED that we have sent a PING [Master]
-            // Indicates on a LED that we have sent a PONG [Slave]
-		//GpioWrite( &Led2, GpioRead( &Led2 ) ^ 1 );
 		printf("Sent Ping/Pong...\n\r");
 				
             Radio.Rx( RX_TIMEOUT_VALUE );
@@ -219,21 +218,23 @@ int main( void )
             break;
         case RX_TIMEOUT:
         case RX_ERROR:
+	printf("RX_ERROR\n\r");
 		Radio.Rx( RX_TIMEOUT_VALUE );
 		State = LOWPOWER;
             break;
         case TX_TIMEOUT:
+	printf("TX_TIMEOUT\n\r");
 		Radio.Rx( RX_TIMEOUT_VALUE );
 		State = LOWPOWER;
             break;
         case LOWPOWER:
         default:
             // Set low power
+	//printf("L\n\r");
             break;
         }
 
         TimerLowPowerHandler( );
-
     }
 }
 
