@@ -16,7 +16,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "board.h"
 #include "radio.h"
 #include "usb-printf.h"
-#include "../utils.h"
+//#include "../utils.h"
 
 #define printf(x) PRINTF(x)
 
@@ -203,10 +203,12 @@ printf("Start Speaker\n\r");
                         Buffer[3] = 'L';
                         Buffer[4] = 'E';
                         // We fill the buffer with numbers for the payload
-                        for( i = 3; i < BufferSize; i++ )
+		
+                        for( i = 5; i < BufferSize; i++ )
                         {
                             Buffer[i] = i - 5;
                         }
+			
                         DelayMs( 500 );
 			printf("Sent Smile...\n\r");
                         Radio.Send( Buffer, BufferSize );

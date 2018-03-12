@@ -16,7 +16,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "board.h"
 #include "radio.h"
 #include "usb-printf.h"
-#include "../utils.h"
+//#include "../utils.h"
 
 #define printf(x) PRINTF(x)
 
@@ -201,7 +201,8 @@ int main( void )
                         // Indicates on a LED that the received frame is a PING
                         GpioWrite( &Led1, GpioRead( &Led1 ) ^ 1 );
 			printf("Received Ping...\n\r");
-		                        DelayMs( 1 );
+			vcom_Send(Buffer);
+			DelayMs( 10 );
 		  }
 		  else
 		  {
