@@ -20,11 +20,8 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "board.h"
 
 #include "LoRaMac.h"
+#include "Region.h"
 #include "Commissioning.h"
-#include "utils.h"
-#include "cli.h"
-#include "eeprom_conf.h"
-//#include "uart-usb-board.h"
 
 /*!
  * Defines the application data transmission duty cycle. 5s, value in [ms].
@@ -54,7 +51,7 @@ Maintainer: Miguel Luis and Gregory Cristian
  */
 #define LORAWAN_ADR_ON                              1
 
-#if defined( USE_BAND_868 )
+#if defined( REGION_EU868 )
 
 #include "LoRaMacTest.h"
 
@@ -69,13 +66,13 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 #if( USE_SEMTECH_DEFAULT_CHANNEL_LINEUP == 1 )
 
-#define LC4                { 867100000, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
-#define LC5                { 867300000, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
-#define LC6                { 867500000, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
-#define LC7                { 867700000, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
-#define LC8                { 867900000, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
-#define LC9                { 868800000, { ( ( DR_7 << 4 ) | DR_7 ) }, 2 }
-#define LC10               { 868300000, { ( ( DR_6 << 4 ) | DR_6 ) }, 1 }
+#define LC4                { 867100000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define LC5                { 867300000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define LC6                { 867500000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define LC7                { 867700000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define LC8                { 867900000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define LC9                { 868800000, 0, { ( ( DR_7 << 4 ) | DR_7 ) }, 2 }
+#define LC10               { 868300000, 0, { ( ( DR_6 << 4 ) | DR_6 ) }, 1 }
 
 #endif
 
@@ -89,13 +86,17 @@ Maintainer: Miguel Luis and Gregory Cristian
 /*!
  * User application data buffer size
  */
-#if defined( USE_BAND_868 )
+#if defined( REGION_CN779 ) || defined( REGION_EU868 ) || defined( REGION_IN865 ) || defined( REGION_KR920 )
 
 #define LORAWAN_APP_DATA_SIZE                       16
 
-#elif defined( USE_BAND_915 ) || defined( USE_BAND_915_HYBRID )
+#elif defined( REGION_AS923 ) || defined( REGION_AU915 ) || defined( REGION_US915 ) || defined( REGION_US915_HYBRID )
 
 #define LORAWAN_APP_DATA_SIZE                       11
+
+#else
+
+#error "Please define a region in the compiler options."
 
 #endif
 
@@ -128,7 +129,7 @@ static uint8_t AppDataSize = LORAWAN_APP_DATA_SIZE;
 /*!
  * User application data buffer size
  */
-#define LORAWAN_APP_DATA_MAX_SIZE                           64
+#define LORAWAN_APP_DATA_MAX_SIZE                           64 //242 Lora-net
 
 /*!
  * User application data
@@ -153,6 +154,7 @@ static TimerEvent_t TxNextPacketTimer;
 /*!
  * Specifies the state of the application LED
  */
+static bool AppLedStateOn = false;
 
 /*!
  * Timer to handle the state of LED1
@@ -181,11 +183,6 @@ static enum eDeviceState
     DEVICE_STATE_SLEEP
 }DeviceState;
 
-
-void reset_device(void)
-{
-DeviceState = DEVICE_STATE_INIT;
-}
 /*!
  * LoRaWAN compliance tests support data
  */
@@ -212,6 +209,7 @@ static void PrepareTxFrame( uint8_t port )
     {
     case 2:
         {
+#if defined( REGION_CN779 ) || defined( REGION_EU868 ) || defined( REGION_IN865 ) || defined( REGION_KR920 )
             AppData[0] = 0;
             AppData[1] = 1;
             AppData[2] = 2;
@@ -228,6 +226,7 @@ static void PrepareTxFrame( uint8_t port )
             AppData[13] = 13;
             AppData[14] = 14;
             AppData[15] = 15;
+#endif
         }
         break;
     case 224:
@@ -452,8 +451,8 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
         case 2:
             if( mcpsIndication->BufferSize == 1 )
             {
-//                AppLedStateOn = mcpsIndication->Buffer[0] & 0x01;
-//                GpioWrite( &Led3, ( ( AppLedStateOn & 0x01 ) != 0 ) ? 0 : 1 );
+                AppLedStateOn = mcpsIndication->Buffer[0] & 0x01;
+                GpioWrite( &Led3, ( ( AppLedStateOn & 0x01 ) != 0 ) ? 0 : 1 );
             }
             break;
         case 224:
@@ -481,10 +480,10 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                     mibReq.Param.AdrEnable = true;
                     LoRaMacMibSetRequestConfirm( &mibReq );
 
-#if defined( USE_BAND_868 )
+#if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( false );
 #endif
-
+//                    GpsStop( );
                 }
             }
             else
@@ -503,10 +502,10 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                     mibReq.Type = MIB_ADR;
                     mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
                     LoRaMacMibSetRequestConfirm( &mibReq );
-#if defined( USE_BAND_868 )
+#if defined( REGION_EU868 )
                     LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
 #endif
-
+//                    GpsStart( );
                     break;
                 case 1: // (iii, iv)
                     AppDataSize = 2;
@@ -523,7 +522,7 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                     AppDataSize = mcpsIndication->BufferSize;
 
                     AppData[0] = 4;
-                    for( uint8_t i = 1; i < AppDataSize; i++ )
+                    for( uint8_t i = 1; i < MIN( AppDataSize, LORAWAN_APP_DATA_MAX_SIZE ); i++ )
                     {
                         AppData[i] = mcpsIndication->Buffer[i] + 1;
                     }
@@ -550,10 +549,10 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                         mibReq.Type = MIB_ADR;
                         mibReq.Param.AdrEnable = LORAWAN_ADR_ON;
                         LoRaMacMibSetRequestConfirm( &mibReq );
-#if defined( USE_BAND_868 )
+#if defined( REGION_EU868 )
                         LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
 #endif
-
+//                        GpsStart( );
 
                         mlmeReq.Type = MLME_JOIN;
 
@@ -573,6 +572,15 @@ static void McpsIndication( McpsIndication_t *mcpsIndication )
                             MlmeReq_t mlmeReq;
                             mlmeReq.Type = MLME_TXCW;
                             mlmeReq.Req.TxCw.Timeout = ( uint16_t )( ( mcpsIndication->Buffer[1] << 8 ) | mcpsIndication->Buffer[2] );
+                            LoRaMacMlmeRequest( &mlmeReq );
+                        }
+                        else if( mcpsIndication->BufferSize == 7 )
+                        {
+                            MlmeReq_t mlmeReq;
+                            mlmeReq.Type = MLME_TXCW_1;
+                            mlmeReq.Req.TxCw.Timeout = ( uint16_t )( ( mcpsIndication->Buffer[1] << 8 ) | mcpsIndication->Buffer[2] );
+                            mlmeReq.Req.TxCw.Frequency = ( uint32_t )( ( mcpsIndication->Buffer[3] << 16 ) | ( mcpsIndication->Buffer[4] << 8 ) | mcpsIndication->Buffer[5] ) * 100;
+                            mlmeReq.Req.TxCw.Power = mcpsIndication->Buffer[6];
                             LoRaMacMlmeRequest( &mlmeReq );
                         }
                         ComplianceTest.State = 1;
@@ -638,9 +646,9 @@ static void MlmeConfirm( MlmeConfirm_t *mlmeConfirm )
     NextTx = true;
 }
 
-
-
-
+/**
+ * Main application entry point.
+ */
 int main( void )
 {
     LoRaMacPrimitives_t LoRaMacPrimitives;
@@ -652,8 +660,6 @@ int main( void )
 
     DeviceState = DEVICE_STATE_INIT;
 
-    cli_init();
-
     while( 1 )
     {
         switch( DeviceState )
@@ -664,8 +670,25 @@ int main( void )
                 LoRaMacPrimitives.MacMcpsIndication = McpsIndication;
                 LoRaMacPrimitives.MacMlmeConfirm = MlmeConfirm;
                 LoRaMacCallbacks.GetBatteryLevel = BoardGetBatteryLevel;
-                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks );
-
+#if defined( REGION_AS923 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_AS923 );
+#elif defined( REGION_AU915 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_AU915 );
+#elif defined( REGION_CN779 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_CN779 );
+#elif defined( REGION_EU868 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_EU868 );
+#elif defined( REGION_IN865 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_IN865 );
+#elif defined( REGION_KR920 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_KR920 );
+#elif defined( REGION_US915 )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_US915 );
+#elif defined( REGION_US915_HYBRID )
+                LoRaMacInitialization( &LoRaMacPrimitives, &LoRaMacCallbacks, LORAMAC_REGION_US915_HYBRID );
+#else
+    #error "Please define a region in the compiler options."
+#endif
                 TimerInit( &TxNextPacketTimer, OnTxNextPacketTimerEvent );
 
                 TimerInit( &Led1Timer, OnLed1TimerEvent );
@@ -682,7 +705,7 @@ int main( void )
                 mibReq.Param.EnablePublicNetwork = LORAWAN_PUBLIC_NETWORK;
                 LoRaMacMibSetRequestConfirm( &mibReq );
 
-#if defined( USE_BAND_868 )
+#if defined( REGION_EU868 )
                 LoRaMacTestSetDutyCycleOn( LORAWAN_DUTYCYCLE_ON );
 
 #if( USE_SEMTECH_DEFAULT_CHANNEL_LINEUP == 1 )
@@ -709,8 +732,7 @@ int main( void )
             }
             case DEVICE_STATE_JOIN:
             {
-				if(GetActivationMethod() == ACTIVATION_METHOD_OTAA)
-				{
+#if( OVER_THE_AIR_ACTIVATION != 0 )
                 MlmeReq_t mlmeReq;
 
                 // Initialize LoRaMac device unique ID
@@ -719,9 +741,8 @@ int main( void )
                 mlmeReq.Type = MLME_JOIN;
 
                 mlmeReq.Req.Join.DevEui = DevEui;
-								mlmeReq.Req.Join.AppEui = get_eeprom_value(EEPROM_APPLICATION_EUI_ADDR);
-								mlmeReq.Req.Join.AppKey = get_eeprom_value(EEPROM_APPLICATION_KEY_ADDR);
-
+                mlmeReq.Req.Join.AppEui = AppEui;
+                mlmeReq.Req.Join.AppKey = AppKey;
                 mlmeReq.Req.Join.NbTrials = 3;
 
                 if( NextTx == true )
@@ -729,25 +750,31 @@ int main( void )
                     LoRaMacMlmeRequest( &mlmeReq );
                 }
                 DeviceState = DEVICE_STATE_SLEEP;
-                }
-				else
-				{
+#else
                 // Choose a random device address if not already defined in Commissioning.h
+                if( DevAddr == 0 )
+                {
+                    // Random seed initialization
+                    srand1( BoardGetRandomSeed( ) );
+
+                    // Choose a random device address
+                    DevAddr = randr( 0, 0x01FFFFFF );
+                }
 
                 mibReq.Type = MIB_NET_ID;
                 mibReq.Param.NetID = LORAWAN_NETWORK_ID;
                 LoRaMacMibSetRequestConfirm( &mibReq );
 
                 mibReq.Type = MIB_DEV_ADDR;
-								mibReq.Param.DevAddr = GetAddress();
+                mibReq.Param.DevAddr = DevAddr;
                 LoRaMacMibSetRequestConfirm( &mibReq );
 
                 mibReq.Type = MIB_NWK_SKEY;
-								mibReq.Param.NwkSKey = get_eeprom_value(EEPROM_NWKSKEY);
+                mibReq.Param.NwkSKey = NwkSKey;
                 LoRaMacMibSetRequestConfirm( &mibReq );
 
                 mibReq.Type = MIB_APP_SKEY;
-								mibReq.Param.AppSKey =  get_eeprom_value(EEPROM_APPSKEY);
+                mibReq.Param.AppSKey = AppSKey;
                 LoRaMacMibSetRequestConfirm( &mibReq );
 
                 mibReq.Type = MIB_NETWORK_JOINED;
@@ -755,8 +782,8 @@ int main( void )
                 LoRaMacMibSetRequestConfirm( &mibReq );
 
                 DeviceState = DEVICE_STATE_SEND;
-				}
-              break;
+#endif
+                break;
             }
             case DEVICE_STATE_SEND:
             {
@@ -791,9 +818,7 @@ int main( void )
             case DEVICE_STATE_SLEEP:
             {
                 // Wake up through events
-                //TimerLowPowerHandler( );
-
-                cli_process();
+                TimerLowPowerHandler( );
                 break;
             }
             default:
