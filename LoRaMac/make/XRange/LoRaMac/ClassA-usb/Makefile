@@ -106,21 +106,20 @@ C_SOURCES = \
 	$(MAC_DIR)/region/Region.c \
 	$(MAC_DIR)/region/RegionCommon.c \
 	$(MAC_DIR)/region/RegionEU868.c \
+	$(BOARD_DIR)/XRange/uart-usb-board.c \
+	$(BOARD_DIR)/XRange/uart-board.c \
+	$(BOARD_DIR)/XRange/usb/cdc/src/usbd_cdc_if.c \
+	$(BOARD_DIR)/XRange/usb/cdc/src/usbd_conf.c \
+	$(BOARD_DIR)/XRange/usb/cdc/src/usbd_desc.c \
+	$(MCU_DIR)/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+	$(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+	$(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+	$(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 	$(APP_DIR)/LoRaMac/classA-usb/XRange/main.c
 ASM_SOURCES = \
 	$(BOARD_DIR)/XRange/cmsis/arm-gcc/startup_stm32l151xc.s
 
 
-	#$(BOARD_DIR)/XRange/uart-usb-board.c \
-	#$(BOARD_DIR)/XRange/uart-board.c \
-	# $(BOARD_DIR)/XRange/usb/cdc/src/usbd_cdc_if.c \
-	# $(BOARD_DIR)/XRange/usb/cdc/src/usbd_conf.c \
-	# $(BOARD_DIR)/XRange/usb/cdc/src/usbd_desc.c \
-	# $(APP_DIR)/LoRaMac/classA_noAuth/XRange/utils.c \
-	# $(MCU_DIR)/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
-	# $(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-	# $(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-	# $(MCU_DIR)/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 
 
 #######################################
@@ -140,7 +139,7 @@ BIN = $(CP) -O binary -S
 #########################################################
 # macros for gcc
 AS_DEFS =
-C_DEFS =  -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32L151xC -DUSE_BAND_868 -DUSE_MODEM_LORA -DREGION_EU868 #-DUSE_USB_CDC
+C_DEFS =  -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32L151xC -DUSE_BAND_868 -DUSE_MODEM_LORA -DREGION_EU868 -DUSE_USB_CDC
 # includes for gcc
 AS_INCLUDES =
 C_INCLUDES = -I $(BOARD_DIR)/XRange/cmsis
@@ -156,10 +155,9 @@ C_INCLUDES += -I$(SOURCE_DIR)/system
 C_INCLUDES += -I$(SOURCE_DIR)
 C_INCLUDES += -I$(MAC_DIR)
 C_INCLUDES += -I$(MAC_DIR)/region
-
-# C_INCLUDES += -I$(BOARD_DIR)/XRange/usb/cdc/inc
-# C_INCLUDES += -I$(MCU_DIR)/STM32_USB_Device_Library/Core/Inc
-# C_INCLUDES += -I$(MCU_DIR)/STM32_USB_Device_Library/Class/CDC/Inc
+C_INCLUDES += -I$(BOARD_DIR)/XRange/usb/cdc/inc
+C_INCLUDES += -I$(MCU_DIR)/STM32_USB_Device_Library/Core/Inc
+C_INCLUDES += -I$(MCU_DIR)/STM32_USB_Device_Library/Class/CDC/Inc
 
 # compile gcc flags
 WFLAGS = -Wall -fdata-sections -ffunction-sections -fmessage-length=0 -c

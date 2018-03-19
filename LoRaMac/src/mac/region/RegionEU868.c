@@ -31,6 +31,9 @@ Maintainer: Miguel Luis ( Semtech ), Gregory Cristian ( Semtech ) and Daniel Jae
 #include "RegionCommon.h"
 #include "RegionEU868.h"
 
+//debug
+#include "usb-printf.h"
+
 // Definitions
 #define CHANNELS_MASK_SIZE              1
 
@@ -614,6 +617,9 @@ bool RegionEU868RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate )
     return true;
 }
 
+///////////////////////////////
+// TODO SUPRESS DEBUG BY USB //
+///////////////////////////////
 bool RegionEU868TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime_t* txTimeOnAir )
 {
     RadioModems_t modem;
