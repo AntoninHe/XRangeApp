@@ -18,7 +18,8 @@ TARGET = classA-usb
 ########################################################
 # optimization
 OPT = -O2
-
+# debug build?
+DEBUG = 0
 #########################################################
 # pathes
 #########################################################
@@ -166,6 +167,9 @@ CFLAGS = -std=c99 -Wno-pointer-sign -mthumb -mcpu=cortex-m3 -fno-aggressive-loop
 # Generate dependency information
 CFLAGS += -MD -MP -MF .dep/$(@F).d
 
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -gdwarf-2
+endif
 #########################################################
 # LDFLAGS
 #########################################################
@@ -232,7 +236,9 @@ clean:
 #########################################################
 Release: all flash
 Debug: CFLAGS += -g -gdwarf-2
-Debug: all
+Debug: all 
+preprocessor: 
+	gcc $(C_DEFS) $(C_INCLUDES) -E  $(APP_DIR)/LoRaMac/classA-usb/XRange/main.c -o preprocecedd.c
 cleanDebug: clean
 cleanRelease: clean
 flash:
