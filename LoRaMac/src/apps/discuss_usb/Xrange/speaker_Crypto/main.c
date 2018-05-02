@@ -19,6 +19,22 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "LoRaMacCrypto.h"
 #include "LoRaMac.h"
 #include "Key.h"
+#include "delay.h"
+#include "uart-usb-board.h"
+#include "mbedtls/base64.h"
+#include "timer.h"
+#include "radio.h"
+
+#define VCOM_BUFF_SIZE 256
+#define MSG_YES '!'
+#define MSG_NO '?'
+#define MSG_AVAILABLE 'D'
+
+extern Uart_t UartUsb;
+
+static unsigned char vcom_buffer_device[ VCOM_BUFF_SIZE ]={0};
+static unsigned char vcom_buffer_pc[ VCOM_BUFF_SIZE ]={0};
+static unsigned char device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','a'}; //size 7
 
 #define printf(x) PRINTF(x)
 
@@ -152,6 +168,10 @@ States_t State = LOWPOWER;
 int8_t RssiValue = 0;
 int8_t SnrValue = 0;
 
+
+static bool new_device_data_flag = false;
+static size_t len =7;
+
 /*!
  * Radio events function pointer
  */
@@ -182,8 +202,110 @@ void OnRxTimeout( void );
  */
 void OnRxError( void );
 
-//void PrepareFrameTx()
-void SendFrameTx()
+void debug_print_state(){
+    if (UartUsbIsUsbCableConnected()){
+        switch( State )
+        {
+            case RX:
+            UartUsbPutChar( &UartUsb, 'R' ); 
+            UartUsbPutChar( &UartUsb, 'X' ); 
+                break;
+            case TX:
+            UartUsbPutChar( &UartUsb, 'T' ); 
+            UartUsbPutChar( &UartUsb, 'X' ); 
+                break;
+            case RX_TIMEOUT:
+            UartUsbPutChar( &UartUsb, 'R' ); 
+            UartUsbPutChar( &UartUsb, 'X' ); 
+            UartUsbPutChar( &UartUsb, ' ' ); 
+            UartUsbPutChar( &UartUsb, 'T' ); 
+            case RX_ERROR:
+            UartUsbPutChar( &UartUsb, 'R' ); 
+            UartUsbPutChar( &UartUsb, 'X' ); 
+            UartUsbPutChar( &UartUsb, ' ' );
+            UartUsbPutChar( &UartUsb, 'E' ); 
+                break;
+            case TX_TIMEOUT:
+            UartUsbPutChar( &UartUsb, 'R' ); 
+            UartUsbPutChar( &UartUsb, 'T' ); 
+            UartUsbPutChar( &UartUsb, ' ' ); 
+            UartUsbPutChar( &UartUsb, 'T' ); 
+                break;
+            case LOWPOWER:
+            UartUsbPutChar( &UartUsb, 'L' ); 
+                break;
+            default:
+            UartUsbPutChar( &UartUsb, 'D' ); 
+                break;
+        }
+        UartUsbPutChar( &UartUsb, '\n' ); 
+        UartUsbPutChar( &UartUsb, '\r' ); 
+    }
+}
+
+int serial(unsigned char device_data[], uint8_t len){
+
+    uint32_t iTimeOut;
+    int pcCpmt;
+    uint8_t readVar[5];
+    uint8_t test_get=0;
+
+    if (UartUsbIsUsbCableConnected()){
+
+        if( new_device_data_flag == true ){ // Device need transfert device_data
+            UartUsbPutChar( &UartUsb, MSG_YES );
+        }
+        else{ // Device not need transfert device_data
+            UartUsbPutChar( &UartUsb, MSG_NO ); 
+        }
+
+        iTimeOut=1;
+        test_get = 2;
+        while( test_get != 0 ) 
+        {
+            test_get = UartUsbGetChar( &UartUsb, readVar );
+            
+            if( test_get == 0 && ( readVar[0] == MSG_NO || readVar[0] == MSG_YES )){ // Pc responded
+
+                if( new_device_data_flag == true ){  // Device need transfert device_data
+                    UartUsbPutBuffer( &UartUsb , (uint8_t*)vcom_buffer_device , len );
+                    new_device_data_flag = false;
+                }
+
+                if ( readVar[0] == MSG_YES ){ // Pc have device_data to transmit
+                    pcCpmt = -1;
+                    while(UartUsbGetChar( &UartUsb, readVar ) == 0); // read the space
+                    while( readVar[0]!=' ' ){
+                        while(UartUsbGetChar( &UartUsb, readVar ) != 0);
+                        vcom_buffer_pc[pcCpmt++] = readVar[0];
+                        //UartUsbPutChar( &UartUsb, readVar[0] );
+                    }
+                }
+                break; // done 
+            }
+            iTimeOut++;
+            if( iTimeOut%1000000 == 0 )
+                break; // try again to contact PC
+        }
+    }
+    return 0;
+}
+
+void discussSerial(){
+    size_t olen;
+
+    mbedtls_base64_encode(vcom_buffer_device, sizeof(vcom_buffer_device), &olen , device_data, len);
+    
+    vcom_buffer_device[olen++] = ' ';
+    //while(1){
+    serial(device_data, olen);
+    //}
+}
+
+
+
+
+void PrepareFrameTx()
 {
 	uint8_t pktHeaderLen = 0;
 	uint32_t mic = 0;
@@ -335,44 +457,45 @@ int main( void )
 
     Radio.Rx( RX_TIMEOUT_VALUE );
     DelayMs( 500 );
-    printf("Start Speaker\n\r");															
-    State = RX;
+    //printf("Start Speaker\n\r");															
     while( 1 )
     {
+        //debug_print_state();
+        State = RX; // debug
         switch( State )
         {
         case RX:
                 if( BufferSize > 0 )
 		{
                     DelayMs( 500 );
-                    printf("Sent SMILE \n\r");
-                    SendFrameTx();
+                    //printf("Sent SMILE \n\r");
+                    new_device_data_flag = true;
+                    PrepareFrameTx();
                     Radio.Send( LoRaMacBuffer, LoRaMacBufferPktLen );
+                    discussSerial();        
+                    //Radio.Rx( RX_TIMEOUT_VALUE );
+                    State = LOWPOWER;
 		}
             break;
         case TX:
-                printf("Finish Send \n");
                 Radio.Rx( RX_TIMEOUT_VALUE );
             break;
         case RX_TIMEOUT:
-                printf("RX TIMEOUT \n");
         case RX_ERROR:
                 Radio.Rx( RX_TIMEOUT_VALUE );
                 State = LOWPOWER;
-                printf("RX ERROR \n");
             break;
         case TX_TIMEOUT:
                 Radio.Rx( RX_TIMEOUT_VALUE );
                 State = LOWPOWER;
-                printf("TX TIMEOUT \n");
             break;
         case LOWPOWER:
         default:
+            discussSerial();        
             // Set low power
             break;
         }
         TimerLowPowerHandler( );
-	State = RX;
     }
 }
 
@@ -387,6 +510,8 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     Radio.Sleep( );
     BufferSize = size;
     memcpy( Buffer, payload, BufferSize );
+    len = size;
+    memcpy( device_data, payload, BufferSize );
     RssiValue = rssi;
     SnrValue = snr;
     State = RX;
