@@ -167,10 +167,10 @@ int8_t SnrValue = 0;
 static bool new_device_data_flag = false;
 static bool new_pc_data_to_send = false;
 
-static size_t len =7;
-static size_t PcBufferSize = 0;
+static size_t Pc_data_BufferSize = 0;
 
 static uint8_t pc_data[ VCOM_BUFF_SIZE ]={0};
+static uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','A'}; //size 7
 
 /*!
  * Radio events function pointer
@@ -270,11 +270,11 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 {
 	uint8_t pktHeaderLen = 0;
 	uint32_t mic = 0;
-        uint16_t payload[VCOM_BUFF_SIZE]={0}; 
+        uint16_t payload_device[VCOM_BUFF_SIZE]={0}; 
 	uint8_t framePort = 1; // fPort;
 
-        memcpy( payload, MyBuffer, LoRaMacTxPayloadLen );
         memset( LoRaMacBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+        memcpy( payload_device, MyBuffer, LoRaMacTxPayloadLen );
 
 	LoRaMacBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
 
@@ -290,7 +290,7 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 
 	LoRaMacBuffer[pktHeaderLen++] = framePort;
 
-	LoRaMacPayloadEncrypt( (uint8_t* ) payload, LoRaMacTxPayloadLen, LoRaMacAppSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &LoRaMacBuffer[pktHeaderLen] );
+	LoRaMacPayloadEncrypt( (uint8_t* ) payload_device, LoRaMacTxPayloadLen, LoRaMacAppSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &LoRaMacBuffer[pktHeaderLen] );
 
 	LoRaMacBufferPktLen = pktHeaderLen + LoRaMacTxPayloadLen;
 
@@ -311,8 +311,9 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 //------------------------ DEBUG -----------------------------------//
 }
 
-int serial(unsigned char device_data[], uint8_t len, uint8_t *vcom_buffer_device, uint8_t *vcom_buffer_pc){;
+int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
 
+    uint8_t vcom_buffer_pc[VCOM_BUFF_SIZE ]={0};
     uint32_t iTimeOut;
     uint8_t pcCpmt;
     uint8_t readVar[5];
@@ -336,41 +337,39 @@ int serial(unsigned char device_data[], uint8_t len, uint8_t *vcom_buffer_device
             if( test_get == 0 && ( readVar[0] == MSG_NO || readVar[0] == MSG_YES )){ // Pc responded
 
                 if( new_device_data_flag == true ){  // Device need transfert device_data
-                    UartUsbPutBuffer( &UartUsb , (uint8_t*)vcom_buffer_device , len );
+                    UartUsbPutBuffer( &UartUsb , (uint8_t*)vcom_buffer_device , len_buffer_device );
                     new_device_data_flag = false;
                 }
 
                 if ( readVar[0] == MSG_YES ){ // Pc have device_data to transmit
-                    pcCpmt = -1;
-                    while(UartUsbGetChar( &UartUsb, readVar ) == 0); // read the space
+                    pcCpmt = 0;
+                    //while(UartUsbGetChar( &UartUsb, readVar ) == 0); // read the space
                     while( readVar[0]!=' ' ){
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
                         vcom_buffer_pc[pcCpmt++] = readVar[0];
                     }
-                    PrepareFrameTx(vcom_buffer_pc, pcCpmt -1);
+                    PrepareFrameTx(vcom_buffer_pc, pcCpmt - 1);
                     new_pc_data_to_send = true;
                 }
                 break; // done 
             }
             iTimeOut++;
-            if( iTimeOut%1000000 == 0 )
+            if( iTimeOut % 100 == 0 )
                 break; // try again to contact PC
         }
     }
     return 0;
 }
 
-void discussSerial(uint8_t *device_data){
+void discussSerial(){
     size_t olen;
     uint8_t vcom_buffer_device[ VCOM_BUFF_SIZE ]={0};
-    uint8_t vcom_buffer_pc[     VCOM_BUFF_SIZE ]={0};
 
-    mbedtls_base64_encode(vcom_buffer_device, sizeof(vcom_buffer_device), &olen , device_data, len);
+    mbedtls_base64_encode(vcom_buffer_device, sizeof(vcom_buffer_device), &olen , pc_data, Pc_data_BufferSize);
     
     vcom_buffer_device[olen++] = ' ';
-    serial(device_data, olen, vcom_buffer_device,  vcom_buffer_pc);
+    serial( vcom_buffer_device, olen);
 }
-
 
 /**
  * Main application entry point.
@@ -378,7 +377,6 @@ void discussSerial(uint8_t *device_data){
 int main( void )
 {
 
-    uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','a'}; //size 7
     // Target board initialization
     BoardInitMcu( );
     BoardInitPeriph( );
@@ -434,10 +432,8 @@ int main( void )
                 if( BufferSize > 0 )
 		{
                     DelayMs( 500 );// debug
-                    //printf("Sent SMILE \n\r");
                     new_device_data_flag = true;
-                    //PrepareFrameTx();
-                    discussSerial(device_data);        
+                    discussSerial();        
                     Radio.Rx( RX_TIMEOUT_VALUE );
                     State = LOWPOWER;
 		}
@@ -484,8 +480,8 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     BufferSize = size;
     //memcpy( Buffer, payload, BufferSize );
 
-    PcBufferSize = size;
-    memcpy( pc_data, payload, PcBufferSize );
+    Pc_data_BufferSize = size;
+    memcpy( pc_data, payload, Pc_data_BufferSize );
 
     RssiValue = rssi;
     SnrValue = snr;
