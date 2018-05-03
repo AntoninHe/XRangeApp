@@ -270,10 +270,11 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 {
 	uint8_t pktHeaderLen = 0;
 	uint32_t mic = 0;
-        uint16_t payload[VCOM_BUFF_SIZE]; 
+        uint16_t payload[VCOM_BUFF_SIZE]={0}; 
 	uint8_t framePort = 1; // fPort;
 
         memcpy( payload, MyBuffer, LoRaMacTxPayloadLen );
+        memset( LoRaMacBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
 
 	LoRaMacBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
 
@@ -303,7 +304,11 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 	LoRaMacBufferPktLen += LORAMAC_MFR_LEN;
 
 	UpLinkCounter++;
-
+//------------------------ DEBUG -----------------------------------//
+        memset( LoRaMacBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+        LoRaMacBufferPktLen = LoRaMacTxPayloadLen;
+        memcpy( LoRaMacBuffer, MyBuffer, LoRaMacTxPayloadLen );
+//------------------------ DEBUG -----------------------------------//
 }
 
 int serial(unsigned char device_data[], uint8_t len, uint8_t *vcom_buffer_device, uint8_t *vcom_buffer_pc){;
@@ -422,7 +427,7 @@ int main( void )
 
     while( 1 )
     {
-        debug_print_state();
+        //debug_print_state();
         switch( State )
         {
         case RX:
