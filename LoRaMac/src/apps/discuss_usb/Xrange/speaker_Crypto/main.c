@@ -270,17 +270,10 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 {
 	uint8_t pktHeaderLen = 0;
 	uint32_t mic = 0;
-	//const void* payload = fBuffer;
-	//void* payload ;
         uint16_t payload[VCOM_BUFF_SIZE]; 
 	uint8_t framePort = 1; // fPort;
 
-	//--------------------------------------------------------------//     
-        //uint16_t MyBuffer[2]={0x1234,0xABCD};
-	//payload = MyBuffer;
-        //LoRaMacTxPayloadLen=4; // buffer length
         memcpy( payload, MyBuffer, LoRaMacTxPayloadLen );
-	//--------------------------------------------------------------//     
 
 	LoRaMacBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
 
