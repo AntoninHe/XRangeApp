@@ -146,8 +146,9 @@ typedef enum
     TX_TIMEOUT,
 }States_t;
 
-#define RX_TIMEOUT_VALUE                            1000
+#define RX_TIMEOUT_VALUE                            0
 #define BUFFER_SIZE                                 64 // Define the payload size here
+#define SERIAL_TIMEOUT_VALUE                        1000
 
 uint8_t i_test=0;
 
@@ -354,7 +355,7 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
                 break; // done 
             }
             iTimeOut++;
-            if( iTimeOut % 100 == 0 )
+            if( iTimeOut % SERIAL_TIMEOUT_VALUE == 0 )
                 break; // try again to contact PC
         }
     }
