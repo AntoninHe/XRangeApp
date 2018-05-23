@@ -32,8 +32,11 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 extern Uart_t UartUsb;
 
+#define RX_TIMEOUT_VALUE                            0
+#define BUFFER_SIZE                                 64 // Define the payload size here
+#define SERIAL_TIMEOUT_VALUE                        1000000
 
-#define printf(x) PRINTF(x)
+//#define printf(x) PRINTF(x)
 
 
 #if defined( USE_BAND_868 )
@@ -146,9 +149,6 @@ typedef enum
     TX_TIMEOUT,
 }States_t;
 
-#define RX_TIMEOUT_VALUE                            0
-#define BUFFER_SIZE                                 64 // Define the payload size here
-#define SERIAL_TIMEOUT_VALUE                        1000
 
 uint8_t i_test=0;
 
