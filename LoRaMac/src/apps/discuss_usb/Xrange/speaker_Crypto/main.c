@@ -34,7 +34,7 @@ extern Uart_t UartUsb;
 
 #define RX_TIMEOUT_VALUE                            0
 #define BUFFER_SIZE                                 64 // Define the payload size here
-#define SERIAL_TIMEOUT_VALUE                        1000000
+#define SERIAL_TIMEOUT_VALUE                        10000000
 
 //#define printf(x) PRINTF(x)
 
@@ -321,7 +321,6 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
     uint8_t test_get=0;
 
     if (UartUsbIsUsbCableConnected()){
-
         if( new_device_data_flag == true ){ // Device need transfert device_data
             UartUsbPutChar( &UartUsb, MSG_YES );
         }
