@@ -162,9 +162,9 @@ int8_t SnrValue = 0;
 static bool new_gateway_node_to_gateway_pc = false;
 static bool node_bridge_to_node_gateway = false;
 
-static size_t Pc_data_BufferSize = 0;
+static size_t sizeDataFromBridgeNodeForPcGateway = 0;
 
-static uint8_t pc_data[ VCOM_BUFF_SIZE ]={0};
+static uint8_t dataFromBridgeNodeForPcGateway[ VCOM_BUFF_SIZE ]={0};
 static uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','A'}; //size 7
 
 /*!
@@ -306,19 +306,19 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 //------------------------ DEBUG -----------------------------------//
 }
 
-int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
+int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
 
-    uint8_t vcom_buffer_pc[VCOM_BUFF_SIZE ]={0};
+    uint8_t vcomBufferPcFromPc[VCOM_BUFF_SIZE ]={0};
     uint32_t iTimeOut;
     uint8_t pcCpmt;
     uint8_t readVar[5];
     uint8_t test_get=0;
 
     if (UartUsbIsUsbCableConnected()){
-        if( new_gateway_node_to_gateway_pc == true ){ // Device need transfert device_data
+        if( new_gateway_node_to_gateway_pc == true ){ 
             UartUsbPutChar( &UartUsb, MSG_YES );
         }
-        else{ // Device not need transfert device_data
+        else{ 
             UartUsbPutChar( &UartUsb, MSG_NO ); 
         }
 
@@ -330,8 +330,8 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
             
             if( test_get == 0 && ( readVar[0] == MSG_NO || readVar[0] == MSG_YES )){ // Pc responded
 
-                if( new_gateway_node_to_gateway_pc == true ){  // Device need transfert device_data
-                    UartUsbPutBuffer( &UartUsb , (uint8_t*)vcom_buffer_device , len_buffer_device );
+                if( new_gateway_node_to_gateway_pc == true ){  
+                    UartUsbPutBuffer( &UartUsb , (uint8_t*)vcomBufferForPC , len_buffer_device );
                     new_gateway_node_to_gateway_pc = false;
                 }
 
@@ -339,10 +339,9 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
                     pcCpmt = 0;
                     while( readVar[0]!=' ' ){
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
-                        vcom_buffer_pc[pcCpmt++] = readVar[0];
+                        vcomBufferPcFromPc[pcCpmt++] = readVar[0];
                     }
-                    PrepareFrameTx(vcom_buffer_pc, pcCpmt - 1);
-
+                    PrepareFrameTx(vcomBufferPcFromPc, pcCpmt - 1);
                     node_bridge_to_node_gateway = true;
                 }
                 break; // done 
@@ -357,12 +356,12 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
 
 void discussSerial(){
     size_t olen;
-    uint8_t vcom_buffer_device[ VCOM_BUFF_SIZE ]={0};
+    uint8_t vcomBufferForPC[ VCOM_BUFF_SIZE ]={0};
 
-    mbedtls_base64_encode(vcom_buffer_device, sizeof(vcom_buffer_device), &olen , pc_data, Pc_data_BufferSize);
+    mbedtls_base64_encode(vcomBufferForPC, sizeof(vcomBufferForPC), &olen , dataFromBridgeNodeForPcGateway, sizeDataFromBridgeNodeForPcGateway);
     
-    vcom_buffer_device[olen++] = ' ';
-    serial( vcom_buffer_device, olen);
+    vcomBufferForPC[olen++] = ' ';
+    serial( vcomBufferForPC, olen);
 }
 
 /**
@@ -470,11 +469,8 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
     Radio.Sleep( );
 
-    BufferSize = size;
-    //memcpy( Buffer, payload, BufferSize );
-
-    Pc_data_BufferSize = size;
-    memcpy( pc_data, payload, Pc_data_BufferSize );
+    sizeDataFromBridgeNodeForPcGateway = size;
+    memcpy( dataFromBridgeNodeForPcGateway, payload, sizeDataFromBridgeNodeForPcGateway );
 
     RssiValue = rssi;
     SnrValue = snr;
