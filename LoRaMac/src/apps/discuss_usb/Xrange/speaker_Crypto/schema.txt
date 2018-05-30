@@ -1,0 +1,5 @@
+ +-----------+       +-------------+       +--------------+       +------------+       +----------+
+ | Pc device | ----> | node bridge | ----> | node gateway | ----> | PC gateway | ----> |  Server  |
+ +-----------+       +-------------+       +--------------+       +------------+       +----------+
+          serial port(USB)        Radio(Lora)           serial port(USB)    Ethernet/Wlan
+            our protocol        pseudo-LoRaWan           our protocol           UDP

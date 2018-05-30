@@ -92,15 +92,15 @@ extern Uart_t UartUsb;
 /*!
  * Buffer containing the data to be sent or received.
  */
-static uint8_t LoRaMacBuffer[LORAMAC_PHY_MAXPAYLOAD];
+static uint8_t LoRaBridgeToGatewayBuffer[LORAMAC_PHY_MAXPAYLOAD];
 
 /*!
- * Length of packet in LoRaMacBuffer
+ * Length of packet in LoRaBridgeToGatewayBuffer
  */
-static uint16_t LoRaMacBufferPktLen = 0;
+static uint16_t LoRaBridgeToGatewayBufferPktLen = 0;
 
 /*!
- * Length of the payload in LoRaMacBuffer
+ * Length of the payload in LoRaBridgeToGatewayBuffer
  */
 //static uint8_t LoRaMacTxPayloadLen = 0;
 
@@ -149,12 +149,6 @@ typedef enum
     TX_TIMEOUT,
 }States_t;
 
-
-uint8_t i_test=0;
-
-//const uint8_t PingMsg[] = "PING";
-//const uint8_t PongMsg[] = "PONG";
-
 uint16_t BufferSize = BUFFER_SIZE;
 //uint8_t Buffer[BUFFER_SIZE];
 
@@ -165,8 +159,8 @@ States_t State = LOWPOWER;
 int8_t RssiValue = 0;
 int8_t SnrValue = 0;
 
-static bool new_device_data_flag = false;
-static bool new_pc_data_to_send = false;
+static bool new_gateway_node_to_gateway_pc = false;
+static bool node_bridge_to_node_gateway = false;
 
 static size_t Pc_data_BufferSize = 0;
 
@@ -274,41 +268,41 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
         uint16_t payload_device[VCOM_BUFF_SIZE]={0}; 
 	uint8_t framePort = 1; // fPort;
 
-        memset( LoRaMacBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+        memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
         memcpy( payload_device, MyBuffer, LoRaMacTxPayloadLen );
 
-	LoRaMacBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
+-	LoRaMacBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
 
-	LoRaMacBuffer[pktHeaderLen++] = ( LoRaMacDevAddr ) & 0xFF;
-	LoRaMacBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 8 ) & 0xFF;
-	LoRaMacBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 16 ) & 0xFF;
-	LoRaMacBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 24 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 8 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 16 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 24 ) & 0xFF;
 
-	LoRaMacBuffer[pktHeaderLen++] = 0x00;// fCtrl->Value
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = 0x00;// fCtrl->Value
 
-	LoRaMacBuffer[pktHeaderLen++] = UpLinkCounter & 0xFF;
-	LoRaMacBuffer[pktHeaderLen++] = ( UpLinkCounter >> 8 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = UpLinkCounter & 0xFF;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( UpLinkCounter >> 8 ) & 0xFF;
 
-	LoRaMacBuffer[pktHeaderLen++] = framePort;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = framePort;
 
-	LoRaMacPayloadEncrypt( (uint8_t* ) payload_device, LoRaMacTxPayloadLen, LoRaMacAppSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &LoRaMacBuffer[pktHeaderLen] );
+	LoRaMacPayloadEncrypt( (uint8_t* ) payload_device, LoRaMacTxPayloadLen, LoRaMacAppSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &LoRaBridgeToGatewayBuffer[pktHeaderLen] );
 
-	LoRaMacBufferPktLen = pktHeaderLen + LoRaMacTxPayloadLen;
+	LoRaBridgeToGatewayBufferPktLen = pktHeaderLen + LoRaMacTxPayloadLen;
 
-	LoRaMacComputeMic( LoRaMacBuffer, LoRaMacBufferPktLen, LoRaMacNwkSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &mic );
+	LoRaMacComputeMic( LoRaBridgeToGatewayBuffer, LoRaBridgeToGatewayBufferPktLen, LoRaMacNwkSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &mic );
 
-	LoRaMacBuffer[LoRaMacBufferPktLen + 0] = mic & 0xFF;
-	LoRaMacBuffer[LoRaMacBufferPktLen + 1] = ( mic >> 8 ) & 0xFF;
-	LoRaMacBuffer[LoRaMacBufferPktLen + 2] = ( mic >> 16 ) & 0xFF;
-	LoRaMacBuffer[LoRaMacBufferPktLen + 3] = ( mic >> 24 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 0] = mic & 0xFF;
+	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 1] = ( mic >> 8 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 2] = ( mic >> 16 ) & 0xFF;
+	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 3] = ( mic >> 24 ) & 0xFF;
 
-	LoRaMacBufferPktLen += LORAMAC_MFR_LEN;
+	LoRaBridgeToGatewayBufferPktLen += LORAMAC_MFR_LEN;
 
-	UpLinkCounter++;
+	UpLinkCounter++; 
 //------------------------ DEBUG -----------------------------------//
-        memset( LoRaMacBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
-        LoRaMacBufferPktLen = LoRaMacTxPayloadLen;
-        memcpy( LoRaMacBuffer, MyBuffer, LoRaMacTxPayloadLen );
+         memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+         LoRaBridgeToGatewayBufferPktLen = LoRaMacTxPayloadLen;
+         memcpy( LoRaBridgeToGatewayBuffer, MyBuffer, LoRaMacTxPayloadLen );
 //------------------------ DEBUG -----------------------------------//
 }
 
@@ -321,7 +315,7 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
     uint8_t test_get=0;
 
     if (UartUsbIsUsbCableConnected()){
-        if( new_device_data_flag == true ){ // Device need transfert device_data
+        if( new_gateway_node_to_gateway_pc == true ){ // Device need transfert device_data
             UartUsbPutChar( &UartUsb, MSG_YES );
         }
         else{ // Device not need transfert device_data
@@ -336,20 +330,20 @@ int serial(uint8_t *vcom_buffer_device, uint8_t len_buffer_device){;
             
             if( test_get == 0 && ( readVar[0] == MSG_NO || readVar[0] == MSG_YES )){ // Pc responded
 
-                if( new_device_data_flag == true ){  // Device need transfert device_data
+                if( new_gateway_node_to_gateway_pc == true ){  // Device need transfert device_data
                     UartUsbPutBuffer( &UartUsb , (uint8_t*)vcom_buffer_device , len_buffer_device );
-                    new_device_data_flag = false;
+                    new_gateway_node_to_gateway_pc = false;
                 }
 
                 if ( readVar[0] == MSG_YES ){ // Pc have device_data to transmit
                     pcCpmt = 0;
-                    //while(UartUsbGetChar( &UartUsb, readVar ) == 0); // read the space
                     while( readVar[0]!=' ' ){
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
                         vcom_buffer_pc[pcCpmt++] = readVar[0];
                     }
                     PrepareFrameTx(vcom_buffer_pc, pcCpmt - 1);
-                    new_pc_data_to_send = true;
+
+                    node_bridge_to_node_gateway = true;
                 }
                 break; // done 
             }
@@ -376,7 +370,6 @@ void discussSerial(){
  */
 int main( void )
 {
-
     // Target board initialization
     BoardInitMcu( );
     BoardInitPeriph( );
@@ -432,7 +425,7 @@ int main( void )
                 if( BufferSize > 0 )
 		{
                     DelayMs( 500 );// debug
-                    new_device_data_flag = true;
+                    new_gateway_node_to_gateway_pc = true;
                     discussSerial();        
                     Radio.Rx( RX_TIMEOUT_VALUE );
                     State = LOWPOWER;
@@ -448,17 +441,17 @@ int main( void )
                 State = LOWPOWER;
             break;
         case TX_TIMEOUT:
-                new_pc_data_to_send = true;
+                node_bridge_to_node_gateway = true;
                 Radio.Rx( RX_TIMEOUT_VALUE );
                 State = LOWPOWER;
             break;
         case LOWPOWER:
         default:
             discussSerial(device_data);        
-            if(new_pc_data_to_send == true)
+            if(node_bridge_to_node_gateway == true)
             {
-                new_pc_data_to_send = false;
-                Radio.Send( LoRaMacBuffer, LoRaMacBufferPktLen );
+                node_bridge_to_node_gateway = false;
+                Radio.Send( LoRaBridgeToGatewayBuffer, LoRaBridgeToGatewayBufferPktLen );
             }
             // Set low power
             break;
