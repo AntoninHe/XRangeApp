@@ -51,7 +51,7 @@ extern Uart_t UartUsb;
     #error "Please define a frequency band in the compiler options."
 #endif
 
-#define TX_OUTPUT_POWER                             5        // dBm
+#define TX_OUTPUT_POWER                             14        // dBm
 
 #if defined( USE_MODEM_LORA )
 
@@ -150,7 +150,6 @@ typedef enum
 }States_t;
 
 uint16_t BufferSize = BUFFER_SIZE;
-//uint8_t Buffer[BUFFER_SIZE];
 
 uint16_t UpLinkCounter;
 
@@ -165,7 +164,7 @@ static bool node_bridge_to_node_gateway = false;
 static size_t sizeDataFromBridgeNodeForPcGateway = 0;
 
 static uint8_t dataFromBridgeNodeForPcGateway[ VCOM_BUFF_SIZE ]={0};
-static uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','A'}; //size 7
+//static uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','A'}; //size 7
 
 /*!
  * Radio events function pointer
@@ -271,7 +270,7 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
         memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
         memcpy( payload_device, MyBuffer, LoRaMacTxPayloadLen );
 
--	LoRaMacBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
+	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
 
 	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr ) & 0xFF;
 	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 8 ) & 0xFF;
@@ -300,9 +299,9 @@ void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 
 	UpLinkCounter++; 
 //------------------------ DEBUG -----------------------------------//
-         memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
-         LoRaBridgeToGatewayBufferPktLen = LoRaMacTxPayloadLen;
-         memcpy( LoRaBridgeToGatewayBuffer, MyBuffer, LoRaMacTxPayloadLen );
+//      memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+//      LoRaBridgeToGatewayBufferPktLen = LoRaMacTxPayloadLen;
+//      memcpy( LoRaBridgeToGatewayBuffer, MyBuffer, LoRaMacTxPayloadLen );
 //------------------------ DEBUG -----------------------------------//
 }
 
@@ -341,6 +340,7 @@ int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
                         vcomBufferPcFromPc[pcCpmt++] = readVar[0];
                     }
+
                     PrepareFrameTx(vcomBufferPcFromPc, pcCpmt - 1);
                     node_bridge_to_node_gateway = true;
                 }
@@ -355,12 +355,13 @@ int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
 }
 
 void discussSerial(){
-    size_t olen;
+    size_t olen = 0;
     uint8_t vcomBufferForPC[ VCOM_BUFF_SIZE ]={0};
 
-    mbedtls_base64_encode(vcomBufferForPC, sizeof(vcomBufferForPC), &olen , dataFromBridgeNodeForPcGateway, sizeDataFromBridgeNodeForPcGateway);
-    
-    vcomBufferForPC[olen++] = ' ';
+    if(new_gateway_node_to_gateway_pc == true){
+        mbedtls_base64_encode(vcomBufferForPC, sizeof(vcomBufferForPC), &olen , dataFromBridgeNodeForPcGateway, sizeDataFromBridgeNodeForPcGateway);
+        vcomBufferForPC[olen++] = ' ';
+    }
     serial( vcomBufferForPC, olen);
 }
 
@@ -446,7 +447,7 @@ int main( void )
             break;
         case LOWPOWER:
         default:
-            discussSerial(device_data);        
+            discussSerial();        
             if(node_bridge_to_node_gateway == true)
             {
                 node_bridge_to_node_gateway = false;

@@ -92,6 +92,7 @@ C_SOURCES = \
 	$(SYS_DIR)/uart.c \
 	$(SYS_DIR)/crypto/aes.c \
 	$(SYS_DIR)/crypto/cmac.c \
+	$(SYS_DIR)/base64/base64.c \
 	$(MAC_DIR)/LoRaMac.c \
 	$(MAC_DIR)/LoRaMacCrypto.c \
 	$(BOARD_DIR)/XRange/adc-board.c \
@@ -135,7 +136,7 @@ BIN = $(CP) -O binary -S
 #########################################################
 # macros for gcc
 AS_DEFS =
-C_DEFS =  -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32L151xC -DUSE_BAND_868 -DUSE_MODEM_LORA -DUSE_USB_CDC
+C_DEFS =  -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32L151xC -DUSE_BAND_868 -DUSE_MODEM_LORA -DUSE_USB_CDC -DMBEDTLS_BASE64_C
 # includes for gcc
 AS_INCLUDES =
 C_INCLUDES = -I $(BOARD_DIR)/XRange/cmsis
@@ -147,6 +148,7 @@ C_INCLUDES += -I$(MCU_DIR)/STM32L1xx_HAL_Driver/Inc
 C_INCLUDES += -I$(SOURCE_DIR)/mac
 C_INCLUDES += -I$(SOURCE_DIR)/radio/sx1272
 C_INCLUDES += -I$(SYS_DIR)/crypto
+C_INCLUDES += -I$(SYS_DIR)/base64
 C_INCLUDES += -I$(SOURCE_DIR)/system
 C_INCLUDES += -I$(BOARD_DIR)/XRange/usb/cdc/inc
 C_INCLUDES += -I$(MCU_DIR)/STM32_USB_Device_Library/Core/Inc
