@@ -164,6 +164,8 @@ static bool node_bridge_to_node_gateway = false;
 static size_t sizeDataFromBridgeNodeForPcGateway = 0;
 
 static uint8_t dataFromBridgeNodeForPcGateway[ VCOM_BUFF_SIZE ]={0};
+static uint8_t dataFromPcForNodeGateway[ VCOM_BUFF_SIZE ]={0};
+
 //static uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','A'}; //size 7
 
 /*!
@@ -312,6 +314,7 @@ int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
     uint8_t pcCpmt;
     uint8_t readVar[5];
     uint8_t test_get=0;
+    size_t olen = 0;
 
     if (UartUsbIsUsbCableConnected()){
         if( new_gateway_node_to_gateway_pc == true ){ 
@@ -340,8 +343,11 @@ int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
                         vcomBufferPcFromPc[pcCpmt++] = readVar[0];
                     }
+                     pcCpmt = pcCpmt - 1;
 
-                    PrepareFrameTx(vcomBufferPcFromPc, pcCpmt - 1);
+                    mbedtls_base64_decode(dataFromPcForNodeGateway,sizeof(dataFromPcForNodeGateway), &olen , vcomBufferPcFromPc , pcCpmt);
+                        
+                    PrepareFrameTx(vcomBufferPcFromPc,olen);
                     node_bridge_to_node_gateway = true;
                 }
                 break; // done 
