@@ -28,7 +28,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define VCOM_BUFF_SIZE 256
 #define MSG_YES '!'
 #define MSG_NO '?'
-#define MSG_AVAILABLE 'D'
+#define MSG_END '*'
 
 extern Uart_t UartUsb;
 
@@ -339,7 +339,7 @@ int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
 
                 if ( readVar[0] == MSG_YES ){ // Pc have device_data to transmit
                     pcCpmt = 0;
-                    while( readVar[0]!=' ' ){
+                    while( readVar[0]!= MSG_END ){
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
                         vcomBufferPcFromPc[pcCpmt++] = readVar[0];
                     }
@@ -366,7 +366,7 @@ void discussSerial(){
 
     if(new_gateway_node_to_gateway_pc == true){
         mbedtls_base64_encode(vcomBufferForPC, sizeof(vcomBufferForPC), &olen , dataFromBridgeNodeForPcGateway, sizeDataFromBridgeNodeForPcGateway);
-        vcomBufferForPC[olen++] = ' ';
+        vcomBufferForPC[olen++] = MSG_END;
     }
     serial( vcomBufferForPC, olen);
 }
