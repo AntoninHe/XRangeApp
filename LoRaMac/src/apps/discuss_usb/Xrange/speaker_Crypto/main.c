@@ -198,120 +198,122 @@ void OnRxTimeout( void );
  */
 void OnRxError( void );
 
-void debug_print_state(){
-    if (UartUsbIsUsbCableConnected()){
-        switch( State )
-        {
-            case RX:
-                UartUsbPutChar( &UartUsb, 'R' ); 
-                UartUsbPutChar( &UartUsb, 'X' ); 
-                break;
+// void debug_print_state(){
+//     if (UartUsbIsUsbCableConnected()){
+//         switch( State )
+//         {
+//             case RX:
+//                 UartUsbPutChar( &UartUsb, 'R' ); 
+//                 UartUsbPutChar( &UartUsb, 'X' ); 
+//                 break;
 
-            case TX:
-                UartUsbPutChar( &UartUsb, 'T' ); 
-                UartUsbPutChar( &UartUsb, 'X' ); 
-                break;
+//             case TX:
+//                 UartUsbPutChar( &UartUsb, 'T' ); 
+//                 UartUsbPutChar( &UartUsb, 'X' ); 
+//                 break;
 
-            case TX_TIMEOUT:
-                UartUsbPutChar( &UartUsb, 'T' ); 
-                UartUsbPutChar( &UartUsb, 'X' ); 
-                UartUsbPutChar( &UartUsb, '_' ); 
-                UartUsbPutChar( &UartUsb, 'T' ); 
-                UartUsbPutChar( &UartUsb, 'I' ); 
-                UartUsbPutChar( &UartUsb, 'M' ); 
-                UartUsbPutChar( &UartUsb, 'E' ); 
-                UartUsbPutChar( &UartUsb, 'O' ); 
-                UartUsbPutChar( &UartUsb, 'U' ); 
-                UartUsbPutChar( &UartUsb, 'T' ); 
-                break;
+//             case TX_TIMEOUT:
+//                 UartUsbPutChar( &UartUsb, 'T' ); 
+//                 UartUsbPutChar( &UartUsb, 'X' ); 
+//                 UartUsbPutChar( &UartUsb, '_' ); 
+//                 UartUsbPutChar( &UartUsb, 'T' ); 
+//                 UartUsbPutChar( &UartUsb, 'I' ); 
+//                 UartUsbPutChar( &UartUsb, 'M' ); 
+//                 UartUsbPutChar( &UartUsb, 'E' ); 
+//                 UartUsbPutChar( &UartUsb, 'O' ); 
+//                 UartUsbPutChar( &UartUsb, 'U' ); 
+//                 UartUsbPutChar( &UartUsb, 'T' ); 
+//                 break;
 
-            case RX_TIMEOUT:
-                UartUsbPutChar( &UartUsb, 'R' ); 
-                UartUsbPutChar( &UartUsb, 'X' ); 
-                UartUsbPutChar( &UartUsb, '_' ); 
-                UartUsbPutChar( &UartUsb, 'T' ); 
-                UartUsbPutChar( &UartUsb, 'I' ); 
-                UartUsbPutChar( &UartUsb, 'M' ); 
-                UartUsbPutChar( &UartUsb, 'E' ); 
-                UartUsbPutChar( &UartUsb, 'O' ); 
-                UartUsbPutChar( &UartUsb, 'U' ); 
-                UartUsbPutChar( &UartUsb, 'T' ); 
-                break;
+//             case RX_TIMEOUT:
+//                 UartUsbPutChar( &UartUsb, 'R' ); 
+//                 UartUsbPutChar( &UartUsb, 'X' ); 
+//                 UartUsbPutChar( &UartUsb, '_' ); 
+//                 UartUsbPutChar( &UartUsb, 'T' ); 
+//                 UartUsbPutChar( &UartUsb, 'I' ); 
+//                 UartUsbPutChar( &UartUsb, 'M' ); 
+//                 UartUsbPutChar( &UartUsb, 'E' ); 
+//                 UartUsbPutChar( &UartUsb, 'O' ); 
+//                 UartUsbPutChar( &UartUsb, 'U' ); 
+//                 UartUsbPutChar( &UartUsb, 'T' ); 
+//                 break;
 
-            case RX_ERROR:
-                UartUsbPutChar( &UartUsb, 'R' ); 
-                UartUsbPutChar( &UartUsb, 'X' ); 
-                UartUsbPutChar( &UartUsb, '_' );
-                UartUsbPutChar( &UartUsb, 'E' ); 
-                UartUsbPutChar( &UartUsb, 'R' ); 
-                UartUsbPutChar( &UartUsb, 'R' ); 
-                UartUsbPutChar( &UartUsb, 'O' ); 
-                UartUsbPutChar( &UartUsb, 'R' ); 
-                break;
+//             case RX_ERROR:
+//                 UartUsbPutChar( &UartUsb, 'R' ); 
+//                 UartUsbPutChar( &UartUsb, 'X' ); 
+//                 UartUsbPutChar( &UartUsb, '_' );
+//                 UartUsbPutChar( &UartUsb, 'E' ); 
+//                 UartUsbPutChar( &UartUsb, 'R' ); 
+//                 UartUsbPutChar( &UartUsb, 'R' ); 
+//                 UartUsbPutChar( &UartUsb, 'O' ); 
+//                 UartUsbPutChar( &UartUsb, 'R' ); 
+//                 break;
 
-            case LOWPOWER:
-                UartUsbPutChar( &UartUsb, 'L' ); 
-                break;
+//             case LOWPOWER:
+//                 UartUsbPutChar( &UartUsb, 'L' ); 
+//                 break;
 
-            default:
-                UartUsbPutChar( &UartUsb, 'D' ); 
-                break;
-        }
-        UartUsbPutChar( &UartUsb, '\n' ); 
-        UartUsbPutChar( &UartUsb, '\r' ); 
-    }
-}
+//             default:
+//                 UartUsbPutChar( &UartUsb, 'D' ); 
+//                 break;
+//         }
+//         UartUsbPutChar( &UartUsb, '\n' ); 
+//         UartUsbPutChar( &UartUsb, '\r' ); 
+//     }
+// }
 
 void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
 {
-	uint8_t pktHeaderLen = 0;
-	uint32_t mic = 0;
-        uint16_t payload_device[VCOM_BUFF_SIZE]={0}; 
-	uint8_t framePort = 1; // fPort;
+    uint8_t pktHeaderLen = 0;
+    uint32_t mic = 0;
+    uint16_t payload_device[VCOM_BUFF_SIZE]={0}; 
+    uint8_t framePort = 1; // fPort;
 
-        memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
-        memcpy( payload_device, MyBuffer, LoRaMacTxPayloadLen );
+    memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+    memcpy( payload_device, MyBuffer, LoRaMacTxPayloadLen );
 
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = 0x40;//macHdr->Value;
 
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr ) & 0xFF;
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 8 ) & 0xFF;
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 16 ) & 0xFF;
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 24 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 8 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 16 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( LoRaMacDevAddr >> 24 ) & 0xFF;
 
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = 0x00;// fCtrl->Value
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = 0x00;// fCtrl->Value
 
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = UpLinkCounter & 0xFF;
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( UpLinkCounter >> 8 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = UpLinkCounter & 0xFF;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = ( UpLinkCounter >> 8 ) & 0xFF;
 
-	LoRaBridgeToGatewayBuffer[pktHeaderLen++] = framePort;
+    LoRaBridgeToGatewayBuffer[pktHeaderLen++] = framePort;
 
-	LoRaMacPayloadEncrypt( (uint8_t* ) payload_device, LoRaMacTxPayloadLen, LoRaMacAppSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &LoRaBridgeToGatewayBuffer[pktHeaderLen] );
+    LoRaMacPayloadEncrypt( (uint8_t* ) payload_device, LoRaMacTxPayloadLen, LoRaMacAppSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &LoRaBridgeToGatewayBuffer[pktHeaderLen] );
 
-	LoRaBridgeToGatewayBufferPktLen = pktHeaderLen + LoRaMacTxPayloadLen;
+    LoRaBridgeToGatewayBufferPktLen = pktHeaderLen + LoRaMacTxPayloadLen;
 
-	LoRaMacComputeMic( LoRaBridgeToGatewayBuffer, LoRaBridgeToGatewayBufferPktLen, LoRaMacNwkSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &mic );
+    LoRaMacComputeMic( LoRaBridgeToGatewayBuffer, LoRaBridgeToGatewayBufferPktLen, LoRaMacNwkSKey, LoRaMacDevAddr, UP_LINK, UpLinkCounter, &mic );
 
-	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 0] = mic & 0xFF;
-	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 1] = ( mic >> 8 ) & 0xFF;
-	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 2] = ( mic >> 16 ) & 0xFF;
-	LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 3] = ( mic >> 24 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 0] = mic & 0xFF;
+    LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 1] = ( mic >> 8 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 2] = ( mic >> 16 ) & 0xFF;
+    LoRaBridgeToGatewayBuffer[LoRaBridgeToGatewayBufferPktLen + 3] = ( mic >> 24 ) & 0xFF;
 
-	LoRaBridgeToGatewayBufferPktLen += LORAMAC_MFR_LEN;
+    LoRaBridgeToGatewayBufferPktLen += LORAMAC_MFR_LEN;
 
-	UpLinkCounter++; 
-//------------------------ DEBUG -----------------------------------//
-//      memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
-//      LoRaBridgeToGatewayBufferPktLen = LoRaMacTxPayloadLen;
-//      memcpy( LoRaBridgeToGatewayBuffer, MyBuffer, LoRaMacTxPayloadLen );
-//------------------------ DEBUG -----------------------------------//
+    UpLinkCounter++; 
+
+    //------------------------ DEBUG -----------------------------------//
+    // memset( LoRaBridgeToGatewayBuffer, 0 , LORAMAC_PHY_MAXPAYLOAD ); // clear the buffer
+    // LoRaBridgeToGatewayBufferPktLen = LoRaMacTxPayloadLen;
+    // memcpy( LoRaBridgeToGatewayBuffer, MyBuffer, LoRaMacTxPayloadLen );
+    // UartUsbPutBuffer( &UartUsb , (uint8_t*)LoRaBridgeToGatewayBuffer , LoRaMacTxPayloadLen );
+    //------------------------ DEBUG -----------------------------------//
 }
 
 int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
 
     uint8_t vcomBufferPcFromPc[VCOM_BUFF_SIZE ]={0};
     uint32_t iTimeOut;
-    uint8_t pcCpmt;
+    uint8_t pcCpmt=0;
     uint8_t readVar[5];
     uint8_t test_get=0;
     size_t olen = 0;
@@ -343,11 +345,9 @@ int serial(uint8_t *vcomBufferForPC, uint8_t len_buffer_device){;
                         while(UartUsbGetChar( &UartUsb, readVar ) != 0);
                         vcomBufferPcFromPc[pcCpmt++] = readVar[0];
                     }
-                     pcCpmt = pcCpmt - 1;
-
+                    pcCpmt = pcCpmt - 1;
                     mbedtls_base64_decode(dataFromPcForNodeGateway,sizeof(dataFromPcForNodeGateway), &olen , vcomBufferPcFromPc , pcCpmt);
-                        
-                    PrepareFrameTx(vcomBufferPcFromPc,olen);
+                    PrepareFrameTx(dataFromPcForNodeGateway,olen);
                     node_bridge_to_node_gateway = true;
                 }
                 break; // done 
@@ -366,7 +366,7 @@ void discussSerial(){
 
     if(new_gateway_node_to_gateway_pc == true){
         mbedtls_base64_encode(vcomBufferForPC, sizeof(vcomBufferForPC), &olen , dataFromBridgeNodeForPcGateway, sizeDataFromBridgeNodeForPcGateway);
-        vcomBufferForPC[olen++] = MSG_END;
+        vcomBufferForPC[olen++] = MSG_END;      
     }
     serial( vcomBufferForPC, olen);
 }
@@ -381,11 +381,11 @@ int main( void )
     BoardInitPeriph( );
 
     // Radio initialization
-    RadioEvents.TxDone = OnTxDone;
-    RadioEvents.RxDone = OnRxDone;
+    RadioEvents.TxDone    = OnTxDone;
+    RadioEvents.RxDone    = OnRxDone;
     RadioEvents.TxTimeout = OnTxTimeout;
     RadioEvents.RxTimeout = OnRxTimeout;
-    RadioEvents.RxError = OnRxError;
+    RadioEvents.RxError   = OnRxError;
 
     Radio.Init( &RadioEvents );
 
@@ -429,13 +429,13 @@ int main( void )
         {
         case RX:
                 if( BufferSize > 0 )
-		{
+        {
                     DelayMs( 500 );// debug
                     new_gateway_node_to_gateway_pc = true;
                     discussSerial();        
                     Radio.Rx( RX_TIMEOUT_VALUE );
                     State = LOWPOWER;
-		}
+        }
             break;
         case TX:
                 Radio.Rx( RX_TIMEOUT_VALUE );
